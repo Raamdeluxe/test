@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./ARCamera.css";
 import "aframe";
 import "aframe-ar";
 
@@ -17,7 +18,7 @@ const ARCamera = () => {
 	};
 
 	return (
-		<div>
+		<div className="btn-container">
 			<button onClick={startCamera}>Start Camera</button>
 			{stream ? (
 				<a-scene>
