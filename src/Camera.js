@@ -1,19 +1,30 @@
-import React, { useState } from "react";
-import "./Camera.css";
+import React, { useState, useEffect } from "react";
 
 function Camera() {
 	const [stream, setStream] = useState(null);
 	const [error, setError] = useState(null);
 	const [isCameraOpen, setIsCameraOpen] = useState(false);
-	const [cameraType, setCameraType] = useState("front");
+	const [cameraId, setCameraId] = useState(null);
+	const [isMobile, setIsMobile] = useState(false);
 
-	const isMobile =
-		/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-			navigator.userAgent
-		);
+	useEffect(() => {
+		navigator.mediaDevices.enumerateDevices().then((devices) => {
+			const cameras = devices.filter((d) => d.kind === "videoinput");
+			if (cameras.length > 0) {
+				setCameraId(cameras[0].deviceId);
+				setIsMobile(
+					/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+						navigator.userAgent
+					)
+				);
+			}
+		});
+	}, []);
 
 	const openCamera = () => {
-		const constraints = { video: { facingMode: cameraType } };
+		const constraints = {
+			video: { deviceId: cameraId ? { exact: cameraId } : undefined },
+		};
 		navigator.mediaDevices
 			.getUserMedia(constraints)
 			.then(setStream)
@@ -22,8 +33,16 @@ function Camera() {
 	};
 
 	const flipCamera = () => {
-		setCameraType(cameraType === "front" ? "back" : "front");
-		openCamera();
+		navigator.mediaDevices.enumerateDevices().then((devices) => {
+			const cameras = devices.filter((d) => d.kind === "videoinput");
+			if (cameras.length > 1) {
+				const newCameraId = cameras.find(
+					(c) => c.deviceId !== cameraId
+				).deviceId;
+				setCameraId(newCameraId);
+				openCamera();
+			}
+		});
 	};
 
 	const closeCamera = () => {
@@ -34,13 +53,12 @@ function Camera() {
 	if (error) {
 		return <p>{error.message}</p>;
 	}
-
 	return (
-		<div className="container">
+		<div>
 			{!isCameraOpen ? (
 				<button onClick={openCamera}>Open Camera</button>
 			) : (
-				<div className="video_container">
+				<div>
 					<video
 						playsInline
 						autoPlay
