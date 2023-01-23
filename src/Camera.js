@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "aframe";
 
 function Camera() {
 	const [stream, setStream] = useState(null);
@@ -53,20 +54,21 @@ function Camera() {
 	if (error) {
 		return <p>{error.message}</p>;
 	}
+
 	return (
 		<div>
 			{!isCameraOpen ? (
 				<button onClick={openCamera}>Open Camera</button>
 			) : (
 				<div>
-					<video
-						playsInline
-						autoPlay
-						muted
-						ref={(ref) => ref && (ref.srcObject = stream)}
-					/>
+					<a-scene>
+						<a-entity gltf-model="#model" position="0 0 0"></a-entity>
+					</a-scene>
 					{isMobile && <button onClick={flipCamera}>Flip Camera</button>}
 					<button onClick={closeCamera}>Close Camera</button>
+					<a-assets>
+						<a-asset-item id="model" src={require("./models/model.gltf")} />
+					</a-assets>
 				</div>
 			)}
 		</div>
